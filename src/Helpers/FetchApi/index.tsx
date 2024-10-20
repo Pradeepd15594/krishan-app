@@ -1,7 +1,7 @@
 const STORAGE_KEY = process.env.STORAGE_KEY;
-// const URI:string=`https://krishna-classes.onrender.com/api/v1.0`;
+const URI:string=`https://krishna-classes.onrender.com/api/v1.0`;
 // const URI:string=`http://10.0.2.2:3200/api/v1.0`;
-const URI:string=`http://localhost:3200/api/v1.0`;
+// const URI:string=`http://localhost:3200/api/v1.0`;
 
 export const getHeader = async (url: string) => {
     let baseHeaders: { [key: string]: string | null } = {
