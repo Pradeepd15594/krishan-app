@@ -17,6 +17,8 @@ export interface InitialStateProps{
     studentTimelineList:StudentTimelineModel[],
     selectedTheme:string;
     totalStudentCount:number;
+    totalClassCount:number;
+    countDashboardData:CountDashboardDataModel
 }
 
 export interface File {
@@ -78,4 +80,9 @@ export interface Class {
     guruName:      string;
     startDateTime: Date;
     endDateTime:   Date;
+}
+
+export interface CountDashboardDataModel {
+    totalStudentCount:number,
+    totalGuruCount:number
 }

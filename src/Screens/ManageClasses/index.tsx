@@ -8,15 +8,15 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Grid2';
 import dayjs, { Dayjs } from 'dayjs';
-import { getClassListByDateRange, getClassListByDate } from './../../Redux/Actions/SagaAction'
+import { cleanRedirect, getAttandanceListBYClassSelect, getClassWithPaginationAndDate } from './../../Redux/Actions/SagaAction'
 import { useDispatch, useSelector } from 'react-redux';
-import { ClassListModel } from '../../Redux/Reducers/Models/Reducers.Model';
+import { AttandanceListOfClassModel, ClassListModel } from '../../Redux/Reducers/Models/Reducers.Model';
 import CustomDateRangePicker from './../../Components/CustomDateRangePicker'
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -31,23 +31,72 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 
 import CreateClass from './CreateClass';
+import { EditOutlined } from '@mui/icons-material';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Avatar from '@mui/material/Avatar';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+
+import { styled } from '@mui/system';
+import CircularProgress, { circularProgressClasses } from '@mui/material/CircularProgress';
+
+
+const ClampedTypography = styled(Typography)({
+  display: '-webkit-box',
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+  WebkitLineClamp: 2,  // Limit to 2 lines
+  textOverflow: 'ellipsis', // Adds "..." for overflow text
+  fontSize:12
+});
 
 const ManageClasses = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [viewInfo, setViewInfo] = useState({ show: false, className: "", description:""});
   const theme = useTheme();
   const dispatch = useDispatch();
   const [value, setValue] = useState<[Dayjs | null, Dayjs | null]>([null, null]);
-
+  const [pagination, setPagination] = useState({ pageNo: 0, perPage: 10 });
   // Get classList from Redux store
+  const totalClassCount: number = useSelector((state: any) => state.AppReducer.totalClassCount);
+  const isLoading: boolean = useSelector((state: any) => state.AppReducer.isLoading);
+  const redirect: string = useSelector((state: any) => state.AppReducer.redirect);
   const classList: ClassListModel[] = useSelector((state: any) => state.AppReducer.classListByDate);
+  const attandanceListOfClass: AttandanceListOfClassModel[] = useSelector((state: any) => state.AppReducer.attandanceListOfClass);
   const [open, setOpen] = React.useState(false);
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const tempDateData = useRef({ startDate: "", endDate: "" });
 
   useEffect(() => {
     let date = new Date();
-    dispatch(getClassListByDate(date));
-  }, [dispatch]);
+    const obj: any = {
+      pagination: pagination,
+      body: tempDateData.current
+    }
+    dispatch(getClassWithPaginationAndDate(obj));
+  }, [pagination]);
+
+
+  useEffect(() => {
+    if(redirect==='back'){
+      setOpen(!open);
+      // document.getElementById('closeBtn')?.click()
+      const obj: any = {
+        pagination: pagination,
+        body: tempDateData.current
+      }
+      
+      dispatch(getClassWithPaginationAndDate(obj));
+      setTimeout(() => {
+        dispatch(cleanRedirect());
+      }, 500);
+    };
+  }, [redirect]);
+
+
 
 
   const handleToggle = () => {
@@ -61,19 +110,38 @@ const ManageClasses = () => {
 
   // Handle page change
   const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
+    setPagination((prev) => ({ ...prev, pageNo: newPage }));
   };
 
-  // Handle rows per page change
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0); // Reset to first page
+
+  // View Details
+  const viewDetails = (item: any) => {
+    dispatch(getAttandanceListBYClassSelect(item?._id));
+    setViewInfo({ show: true, ...item })
   };
+  // handleClose Details
+  const handleClose = () => {
+    setViewInfo({ show: false, className: "", description:"" })
+  };
+
+
+  // Handle page change
+  const searchByDate = (e: any) => {
+    tempDateData.current = e;
+    const obj: any = {
+      pagination: pagination,
+      body: tempDateData.current
+    }
+    dispatch(getClassWithPaginationAndDate(obj));
+  }
+
+
+
 
   // Slice the classList based on current page and rowsPerPage
   const paginatedClasses = classList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  const columns: readonly string[] = ["#", "Class Name", "Description", "Class Cancelled", "Date", "Action"];
+  const columns: readonly string[] = ["#", "Class Name","Date", "Action"];
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.preventDefault();
@@ -92,7 +160,7 @@ const ManageClasses = () => {
           </div>
         </Grid>
         <Grid size={3}>
-          <CustomDateRangePicker onChange={(e: any) => { dispatch(getClassListByDateRange(e)) }} />
+          <CustomDateRangePicker onChange={(e: any) => { searchByDate(e); }} />
         </Grid>
         <Grid size={2}>
           <Button
@@ -103,7 +171,7 @@ const ManageClasses = () => {
       </Grid>
 
       <MainCard title="" content={false} border={true} boxShadow={true}>
-        <TableContainer sx={{ maxHeight: 550 }}>
+        <TableContainer sx={{ maxHeight: 590 }}>
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
@@ -111,11 +179,14 @@ const ManageClasses = () => {
                   <TableCell
                     key={`col-id-${index}`}
                     align={'left'}
-                    sx={{
-                      minWidth: 100,
-                      backgroundColor: theme.palette.background.paper,
-                      color: theme.palette.text.primary,
-                    }}
+                    sx={[
+                      {
+                        backgroundColor: theme.palette.background.paper,
+                        color: theme.palette.text.primary,
+                        paddingY: '10px',
+                      },
+                      index === 0 ? { maxWidth: 40, paddingRight: 0 } : { maxWidth: 300 },
+                    ]}
                   >
                     {column}
                   </TableCell>
@@ -125,19 +196,19 @@ const ManageClasses = () => {
             <TableBody>
               {paginatedClasses.map((item: any, index: number) => (
                 <TableRow hover role="checkbox" tabIndex={-1} key={item._id}>
-                  <TableCell align={'left'}>{page * rowsPerPage + index + 1}</TableCell>
-                  <TableCell align={'left'}>{item.className}</TableCell>
-                  <TableCell align={'left'}>{item.description}</TableCell>
-                  <TableCell align={'left'}>
-                    <Chip size={'small'} style={{ width: '55px' }} label={item.isClassCanceled ? ' Yes ' : ' No '} variant="outlined" /></TableCell>
-                  <TableCell align={'left'}>{dayjs(item.startDateTime).format('DD-MMM, YYYY h:mm A')} to {dayjs(item.endDateTime).format('h:mm A')}</TableCell>
-                  <TableCell align={'left'} sx={{ display: 'flex', justifyContent: 'center' }}>
-                    <IconButton onClick={handleToggle} sx={{ color: theme.palette.info.light }}>
-                      <RemoveRedEye />
+                  <TableCell sx={{ maxWidth: 40, paddingRight: 0, paddingY: '6px' }} align={'left'}>
+                    {pagination.pageNo * pagination.perPage + index + 1}
+                  </TableCell>
+                  <TableCell align={'left'} sx={{ paddingY: '6px' }}>{item.className}</TableCell>
+
+                  <TableCell align={'left'} sx={{ paddingY: '6px' }}>{dayjs(item.startDateTime).format('DD-MMM, YYYY h:mm A')} to {dayjs(item.endDateTime).format('h:mm A')}</TableCell>
+                  <TableCell align={'left'} sx={{ paddingY: '6px', display: 'flex', justifyContent: 'center' }}>
+                    <IconButton onClick={() => viewDetails(item)} size={'medium'} sx={{ color: theme.palette.info.light }}>
+                      <RemoveRedEye sx={{ fontSize: 16 }} />
                     </IconButton>
-                    <IconButton sx={{ color: theme.palette.error.light }}>
-                      <DeleteIcon />
-                    </IconButton>
+                    {/* <IconButton onClick={handleToggle} size={'medium'} sx={{ color: theme.palette.error.light }}>
+                      <EditOutlined sx={{ fontSize: 16 }} />
+                    </IconButton> */}
                   </TableCell>
                 </TableRow>
               ))}
@@ -157,15 +228,19 @@ const ManageClasses = () => {
             </TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 50, 100]}
-          component="div"
-          count={classList.length} // Total number of rows
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+       
+        {paginatedClasses.length ? (
+          <TablePagination
+            component="div"
+            className="custom-pagination"
+            count={totalClassCount} // Total number of rows from the Redux store
+            rowsPerPage={pagination.perPage}
+            page={pagination.pageNo}
+            onPageChange={handleChangePage}
+            rowsPerPageOptions={[]}
+          />
+        ):null}
+       
       </MainCard>
 
 
@@ -180,18 +255,85 @@ const ManageClasses = () => {
         </DialogTitle>
         <DialogContent>
           <CreateClass />
-          {/* <DialogContentText>
-            Let Google help apps determine location. This means sending anonymous
-            location data to Google, even when no apps are running.
-          </DialogContentText> */}
+        </DialogContent>
+      </Dialog>
+
+
+
+      <Dialog
+        fullScreen={false}
+        open={viewInfo.show}
+        onClose={handleClose}
+        sx={{borderRadius:24, overflow:'hidden'}}
+        aria-labelledby="responsive-dialog-title"
+      >
+        <DialogTitle id="responsive-dialog-title">Student Attendance Class (<b>{viewInfo?.className}</b>)</DialogTitle>
+        <DialogContent sx={{ minWidth: 580, minHeight: 450 }}>
+
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', border: '1px solid #ddd', justifyContent: 'space-between', backgroundColor: theme.palette.background.default, color: theme.palette.text.primary, padding: '5px 15px', borderRadius: 5 }} >
+            <div>Total No of Present Students  </div>
+            <div><Chip label={attandanceListOfClass.length} color="primary" /></div>
+
+          </div>
+          <div style={{height:15}}></div>
+          <Divider/>
+          <div style={{height:10}}></div>
+
+          <div style={{display:'flex', flexDirection:'row',}}>
+          <Typography style={{fontSize:14}} variant={'h6'}>About Class:-</Typography>
+          <Typography style={{fontSize:14}}>&nbsp;&nbsp;{viewInfo?.description}</Typography>
+          </div>
+          <div style={{height:12}}></div>
+          <Divider/>
+
+          {isLoading ? (
+            <div style={{
+              display:'flex', 
+              justifyContent:'center', 
+              alignItems:'center',
+              flexDirection:'column',
+              textAlign:'center', marginTop:25, position:'relative'
+            }}>
+              <CircularProgress
+                  variant="indeterminate"
+                  disableShrink
+                  sx={(theme) => ({
+                    color: '#1a90ff',
+                    animationDuration: '550ms',
+                    left: 0,
+                    [`& .${circularProgressClasses.circle}`]: {
+                      strokeLinecap: 'round',
+                    },
+                    ...theme.applyStyles('dark', {
+                      color: '#308fe8',
+                    }),
+                  })}
+                  size={35}
+                  thickness={4}
+                  // {...props}
+                />
+                Loading...
+            </div>
+          ):null}
+          <List dense={false}>
+            {attandanceListOfClass.map((item: any) => (
+              <React.Fragment>
+                <ListItem>
+                  <ListItemAvatar>
+                    <Avatar>{item.fullName.substr(0, 1)}</Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={item.fullName}
+                    secondary={`+91-${item.mobile}, ${item.email}`}
+                  />
+                </ListItem>
+                <Divider variant={'inset'} />
+              </React.Fragment>
+            ))}
+          </List>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={handleToggle}>
-            Disagree
-          </Button>
-          <Button onClick={handleToggle} autoFocus>
-            Agree
-          </Button>
+          <Button onClick={handleClose} autoFocus>Close</Button>
         </DialogActions>
       </Dialog>
     </div>

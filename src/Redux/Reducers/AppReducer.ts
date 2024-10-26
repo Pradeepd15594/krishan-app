@@ -16,7 +16,12 @@ const INITIAL_STATE:InitialStateProps = {
     searchStudentList:[],
     studentTimelineList:[],
     selectedTheme:'',
-    totalStudentCount:0
+    totalStudentCount:0,
+    totalClassCount:0,
+    countDashboardData:{
+        totalStudentCount:0,
+        totalGuruCount:0
+    }
 };
 
 const AppReducer = (state:InitialStateProps = INITIAL_STATE, action:ActionProps) => {
@@ -92,6 +97,14 @@ const AppReducer = (state:InitialStateProps = INITIAL_STATE, action:ActionProps)
                 guruList:action.payload,
                 error: null,
             };
+
+        case types.SET_TOTAL_CLASS_COUNT:
+            return {
+                ...state,
+                totalClassCount:action.payload,
+                error: null,
+            };
+
         case types.GET_CLASS_LIST_BY_RANGE_SUCCESS:
         case types.GET_CLASS_LIST_SUCCESS:
             return {
@@ -204,6 +217,14 @@ const AppReducer = (state:InitialStateProps = INITIAL_STATE, action:ActionProps)
             return {
                 ...state,
                 selectedTheme:action.payload,
+            };
+
+
+        case types.DASHBOARD_COUNT_DATA_SUCCESS:
+            return {
+                ...state,
+                countDashboardData:action.payload,
+                error: null,
             };
 
         // case types.UPDATE_ENTERPRISE_SUCCESS:

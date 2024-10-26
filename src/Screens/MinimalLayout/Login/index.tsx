@@ -35,6 +35,7 @@ import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAuthData, setLoading, cleanRedirect } from './../../../Redux/Actions/SagaAction';
+import { kMaxLength } from 'buffer';
 
 // ================================|| LOGIN ||================================ //
 
@@ -102,8 +103,8 @@ const Login: React.FC = () => {
         <Grid size={{xs:12, md:12, lg:12}}>
           <Formik
             initialValues={{
-              mobile: '0000000000',
-              password: 'hreram',
+              mobile: '',
+              password: '',
               submit: null,
             }}
             validationSchema={Yup.object().shape({
@@ -120,7 +121,7 @@ const Login: React.FC = () => {
                 <Grid container spacing={3}>
                   <Grid size={{xs:12, md:12, lg:12}}>
                     <Stack spacing={1}>
-                      <InputLabel htmlFor="mobile-login">Mobile Number</InputLabel>
+                      <InputLabel htmlFor="mobile-login">Mobile Number({values.mobile.length}/10)</InputLabel>
                       <OutlinedInput
                         id="mobile-login"
                         type="text"
@@ -128,9 +129,10 @@ const Login: React.FC = () => {
                         name="mobile"
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        placeholder="Enter mobile number"
+                        placeholder="Enter 10 degit mobile number"
                         fullWidth
                         sx={inputStyle}
+                        inputProps={{ maxLength: 10 }}
                         error={Boolean(touched.mobile && errors.mobile)}
                       />
                     </Stack>
@@ -197,7 +199,7 @@ const Login: React.FC = () => {
                         }
                         label={<Typography style={{ fontSize: 14 }} variant="h6">Keep me signed in</Typography>}
                       />
-                      <Link variant="h6" style={{ fontSize: 14 }} component={RouterLink} color="text.primary" to="/forgot-password">
+                      <Link variant="h6" style={{ fontSize: 14, visibility:'hidden' }} component={RouterLink} color="text.primary" to="/forgot-password">
                         Forgot Password?
                       </Link>
                     </Stack>
@@ -217,11 +219,11 @@ const Login: React.FC = () => {
                       Login
                     </Button>
                   </Grid>
-                  <Grid size={{xs:12, md:12, lg:12}}>
+                  {/* <Grid size={{xs:12, md:12, lg:12}}>
                     <Divider>
                       <Typography variant="caption"> Login with</Typography>
                     </Divider>
-                  </Grid>
+                  </Grid> */}
                   <Grid size={{xs:12, md:12, lg:12}}>
                     {/* <FirebaseSocial /> */}
                   </Grid>

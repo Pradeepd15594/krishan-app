@@ -18,9 +18,9 @@ interface AuthWrapperProps {
 const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
   return (
     <Box sx={{ minHeight: '80vh' }} className="ttttt">
-      <Grid container direction="column" justifyContent="flex-end" sx={{ minHeight: '80vh' }}>
+      <Grid container direction="column" justifyContent="flex-end" sx={{ minHeight: '80vh', zIndex:9 }}>
         <Grid item xs={12} sx={{ ml: 3, mt: 3 }}>
-          <img src={`${process.env.PUBLIC_URL}/logo.jpg`} style={{maxWidth:'100%', height:50}} />
+          <img src={`${process.env.PUBLIC_URL}/logo.png`} style={{maxWidth:'100%',zIndex:1, position:'absolute', height:100}} />
         </Grid>
         <Grid item xs={12}>
           <Grid
@@ -31,7 +31,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
             alignItems="center"
             sx={{ minHeight: { xs: 'calc(100vh - 210px)', sm: 'calc(100vh - 134px)', md: 'calc(100vh - 130px)' } }}
           >
-            <Grid item>
+            <Grid item style={{zIndex:9}}>
               <AuthCard>{children}</AuthCard>
             </Grid>
           </Grid>
@@ -40,6 +40,9 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
           <AuthFooter />
         </Grid>
       </Grid>
+
+      <img src={`${process.env.PUBLIC_URL}/tree.png`} 
+      style={{position: 'absolute',zIndex: 0,bottom: 0, right: 0, maxWidth:300}} />
     </Box>
   );
 };

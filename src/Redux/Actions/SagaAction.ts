@@ -127,6 +127,14 @@ export const getStudentsTimelineByStudentId = (payload:string) => ({
 });
 
 /**
+ * @description get Class By pagination and date Range.
+ */
+export const getClassWithPaginationAndDate = (payload:string) => ({
+    type: types.GET_CLASS_WITH_PAGINATION_REQUEST,
+    payload
+});
+
+/**
  * @description get Students Timeline By StudentId.
  */
 export const addNewGuru = (payload:any) => ({
@@ -156,4 +164,12 @@ export const setLoading = (payload:any) => ({
 export const setTheme = (payload:any) => ({
     type: types.SET_THEME_REQUEST,
     payload
+});
+
+/**
+ * @description get Students Timeline By StudentId.
+ */
+export const getCountDashboardData = () => ({
+    type: types.DASHBOARD_COUNT_DATA_REQUEST,
+    payload:null
 });

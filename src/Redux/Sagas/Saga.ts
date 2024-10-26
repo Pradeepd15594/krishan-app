@@ -29,6 +29,28 @@ function* getStudentsList({ payload }: any): any {
 
 
 /**
+ * @description getStudents
+ */
+function* getClassListByPagenationDateRange({ payload }: any): any {
+    try {
+        yield put({ type: types.SET_LOADING_SUCCESS, payload: true });
+        const res: any = yield call(AppService.getClassListByPagenationDateRange, payload);
+        if (res && res.data && res.data && res.data.length) {
+            yield put({ type: types.SET_TOTAL_CLASS_COUNT, payload: res?.totalCount });
+            yield put({ type: types.GET_CLASS_LIST_SUCCESS, payload: res.data });
+        } else {
+            yield put({ type: types.GET_CLASS_LIST_FAILURE, payload: [] });
+        }
+        yield put({ type: types.SET_LOADING_SUCCESS, payload: false });
+    } catch (error) {
+        console.log(error, 'error createNewChallenges*');
+        yield put({ type: types.GET_CLASS_LIST_FAILURE, payload: [] });
+        yield put({ type: types.SET_LOADING_SUCCESS, payload: false });
+    }
+}
+
+
+/**
  * @description addNewStudent
  */
 function* addNewStudent({ payload }: any): any {
@@ -356,6 +378,28 @@ function* deleteGuru({ payload }: any): any {
 }
 
 
+
+/**
+ * @description getDashboardData
+ */
+function* getCountDashboardData({ payload }: any): any {
+    try {
+        yield put({ type: types.SET_LOADING_SUCCESS, payload: true });
+        const res: any = yield call(AppService.getCountDashboardData);
+        if (res && res?.status== true &&res.statusCode == 200) {
+            yield put({ type: types.DASHBOARD_COUNT_DATA_SUCCESS, payload: res.data });
+        } else {
+            yield put({ type: types.DASHBOARD_COUNT_DATA_SUCCESS, payload: {totalStudentCount:0, totalGuruCount:0} });
+        }
+        yield put({ type: types.SET_LOADING_SUCCESS, payload: false });
+    } catch (error) {
+        console.log(error, 'error DELETE_GURU_SUCCESS*');
+        yield put({ type: types.DASHBOARD_COUNT_DATA_SUCCESS, payload: {totalStudentCount:0, totalGuruCount:0} });
+        yield put({ type: types.SET_LOADING_SUCCESS, payload: false });
+    }
+}
+
+
 /**
  * @description onChangeSnackbarAction
  */
@@ -404,7 +448,6 @@ export default function* AppSaga() {
     yield takeLatest(types.GET_STUDENT_LIST_REQUEST, getStudentsList);
     yield takeLatest(types.ADD_STUDENT_REQUEST, addNewStudent);
     yield takeLatest(types.REDIRECT_REQUEST, createRedirectRequest);
-    // yield takeLatest(types.GET_QUESTIONNAIRE_LIST_REQUEST, getQuestionnirList);
     yield takeLatest(types.SET_SELECTED_CLASS_REQUEST, setSelectedClass);
     yield takeLatest(types.ADD_NEW_CLASS_REQUEST, createNewClass);
     yield takeLatest(types.SET_SNACK_BAR_ACTION_REQUEST, onChangeSnackbarAction);
@@ -423,6 +466,8 @@ export default function* AppSaga() {
     yield takeLatest(types.DELETE_GURU_REQUEST, deleteGuru);
     yield takeLatest(types.SET_LOADING_REQUEST, setLoadingRequest);
     yield takeLatest(types.SET_THEME_REQUEST, setThemeRequest);
+    yield takeLatest(types.GET_CLASS_WITH_PAGINATION_REQUEST, getClassListByPagenationDateRange);
+    yield takeLatest(types.DASHBOARD_COUNT_DATA_REQUEST, getCountDashboardData);
 }
 
 

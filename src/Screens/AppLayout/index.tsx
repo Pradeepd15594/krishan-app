@@ -218,8 +218,8 @@ export default function AppLayout() {
                             </ListItem>
                         ))}
                     </List>
-                    <Divider />
-                    <List>
+                    {/* <Divider /> */}
+                    {/* <List>
                         {['All mail', 'Trash', 'Spam'].map((text, index) => (
                             <ListItem key={text} disablePadding sx={{ display: 'block' }}>
                                 <ListItemButton
@@ -269,7 +269,7 @@ export default function AppLayout() {
                                 </ListItemButton>
                             </ListItem>
                         ))}
-                    </List>
+                    </List> */}
                 </div>
 
             </Drawer>

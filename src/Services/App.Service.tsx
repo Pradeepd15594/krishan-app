@@ -22,6 +22,18 @@ class AppService {
         }
     };
 
+    async getClassListByPagenationDateRange(data:any) {
+        try {
+            let query='';
+            if(data.pagination && data.pagination.pageNo>-1 && data.pagination.perPage){
+                query=`?pageNo=${(data.pagination.pageNo + 1)}&perPage=${data.pagination.perPage}`;
+            }
+            return await ApiFetch.fetchPost(`/${API.getClassByPagenationDateRange}${query}`, JSON.stringify(data.body))
+        } catch (error: any) {
+            return { status: false, message: "no data found" };
+        }
+    };
+
     async addNewClass(formData:any) {
         try {
             return await ApiFetch.fetchPost(`/${API.addNewClassAPI}`, JSON.stringify(formData))
@@ -117,6 +129,15 @@ class AppService {
     async deleteNewGuru(id:string) {
         try {
             return await ApiFetch.fetchPut(`/${API.deleteUserList}${id}`, JSON.stringify({}))
+        } catch (error: any) {
+            return { status: false, message: "no data found" };
+        }
+    };
+
+
+    async getCountDashboardData() {
+        try {
+            return await ApiFetch.fetchGet(`/${API.countDashboardData}`)
         } catch (error: any) {
             return { status: false, message: "no data found" };
         }

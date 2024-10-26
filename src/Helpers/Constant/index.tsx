@@ -18,6 +18,8 @@ const API={
     getStudentsTimeline: `render-server/get-students-timeline/${''}`,
     addNewGuru: `render-server/add-new-guru`,
     deleteUserList: `render-server/delete-guru/${''}`,
+    getClassByPagenationDateRange: `render-server/get-class-list-by-pagenation-date-range`,
+    countDashboardData: `render-server/count-dashboard-data`,
     
 }
 
